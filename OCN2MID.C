@@ -29,6 +29,7 @@ int addSeq = 0;
 int foundTable = 0;
 int songTempo = 0;
 int highestSeq = 0;
+int rcFix = 0;
 
 unsigned long seqList[500];
 unsigned static char* romData;
@@ -221,6 +222,18 @@ int main(int args, char* argv[])
 		romData = (unsigned char*)malloc(bankSize);
 		fread(romData, 1, bankSize, rom);
 		fclose(rom);
+
+
+		/*Fix for RoboCop*/
+		if (romData[0x2602] == 0x66 && romData[0x2604] == 0x10 && romData[0x2605] == 0x66)
+		{
+			rcFix = 1;
+		}
+		else
+		{
+			rcFix = 0;
+		}
+
 		/*Try to search the bank for song pattern table loader*/
 		for (i = 0; i < bankSize; i++)
 		{
@@ -790,7 +803,17 @@ void song2mid(int songNum, long ptrs[4])
 						/*"Hold" note*/
 						else if (command[0] == 0x8C)
 						{
-							curDelay += 480;
+
+							/*Fix for RoboCop*/
+							if (rcFix == 1)
+							{
+								curDelay += 1290;
+							}
+							else
+							{
+								curDelay += 480;
+							}
+
 							seqPos++;
 						}
 
